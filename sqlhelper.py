@@ -23,7 +23,7 @@ class SqlHelper(object):
             utils.log('create_database command:%s' % command)
             self.cursor.execute(command)
             self.conn.commit()
-        except Exception, e:
+        except Exception as e:
             utils.log('SqlHelper create_database exception:%s' % str(e), logging.WARNING)
 
     def create_table(self, command):
@@ -32,7 +32,7 @@ class SqlHelper(object):
             x = self.cursor.execute(command)
             self.conn.commit()
             return x
-        except Exception, e:
+        except Exception as e:
             utils.log('create_table exception:%s' % str(e), logging.WARNING)
 
     def insert_data(self, command, data, commit = False):
@@ -42,7 +42,7 @@ class SqlHelper(object):
             if commit:
                 self.conn.commit()
             return x
-        except Exception, e:
+        except Exception as e:
             utils.log('insert_data exception msg:%s' % str(e), logging.WARNING)
 
     def commit(self):
@@ -55,7 +55,7 @@ class SqlHelper(object):
             if commit:
                 self.conn.commit()
             return data
-        except Exception, e:
+        except Exception as e:
             utils.log('execute exception msg:%s' % str(e))
             return None
 
@@ -68,7 +68,7 @@ class SqlHelper(object):
             if commit:
                 self.conn.commit()
             return data
-        except Exception, e:
+        except Exception as e:
             utils.log('execute exception msg:%s' % str(e))
             return None
 
@@ -82,7 +82,7 @@ class SqlHelper(object):
                 self.conn.commit()
 
             return data
-        except Exception, e:
+        except Exception as e:
             utils.log('execute exception msg:%s' % str(e))
             return None
 

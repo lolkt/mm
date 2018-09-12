@@ -1,9 +1,9 @@
 # encoding=utf-8
-
+#!/usr/python3
 import re
 import os
 import utils
-import urllib2
+import urllib.request, urllib.parse, urllib.error
 from sqlhelper import SqlHelper
 from bs4 import BeautifulSoup as bs
 
@@ -23,11 +23,18 @@ class Crawler(object):
 
 
     def readHtml(self, html):
-        response = urllib2.urlopen(html)
+        response = urllib.request.urlopen(html)
         return response.read()
 
     def getLinkIdAndNames(self, htmlData):
-        items = re.findall(self.model_pattern, htmlData)
+
+        # htmlData = htmlData.decode('utf-8')
+        # htmlData = htmlData.decode();
+
+        items = re.findall(self.model_pattern,  htmlData)
+
+        print('items:'+items)
+
         self.links = [link for link, name in items]
         self.names = [name.decode('gbk') for link, name in items]
         self.ids = [link[link.index('=')+1:] for link in self.links]
@@ -36,7 +43,7 @@ class Crawler(object):
         for i, model_id in enumerate(self.ids):
 
             utils.log('start downloading:%s' % self.names[i])
-            # print 'start downloading', self.names[i]
+            print ('start downloading', self.names[i])
 
             # 插入用户
             command = self.sql.insert_data_to_users()
@@ -44,13 +51,13 @@ class Crawler(object):
 
             try:
                 self.sql.insert_data(command, msg, commit = True)
-            except Exception, e:
+            except Exception as e:
                 utils.log('insert users data errors')
 
 
-            for page in xrange(1, 10):
+            for page in range(1, 10):
                 utils.log('current page:%s' % page)
-                # print 'current page', page
+                 # print ('current page', page)
 
                 model_url = self.album_prefix.format(model_id, page)
                 soup = bs(self.readHtml(model_url), 'html.parser')
@@ -64,17 +71,17 @@ class Crawler(object):
                     album_create_time = album.find('p', class_ = 'mm-photo-date').string.strip(u'创建时间: ').strip(u'´´½¨Ê±¼ä:')
                     album_img_count = album.find('span', class_ = 'mm-pic-number').string.strip('()').strip(u'张').strip(u'ÕÅ')
 
-                    # print ">>>>>>>>>>>>>>>>>>>>>>"
-                    # print album.find('p', class_ = 'mm-photo-date').string
-                    # print album_create_time
-                    # print ">>>>>>>>>>>>>>>>>>>>>>"
+                    print (">>>>>>>>>>>>>>>>>>>>>>")
+                    print (album.find('p', class_ = 'mm-photo-date').string)
+                    print (album_create_time)
+                    print (">>>>>>>>>>>>>>>>>>>>>>")
 
                     # 插入相册
                     command = self.sql.insert_data_to_albums()
                     msg = (album_id, model_id, album_name, album_create_time, "", 1, album_img_count)
                     try:
                         self.sql.insert_data(command, msg, commit = True)
-                    except Exception, e:
+                    except Exception as e:
                         utils.log('insert albums data errors')
 
 
@@ -85,7 +92,7 @@ class Crawler(object):
 
     def getImages(self, model_id, album_id, image_count):
         # print 'start downloading album', album_id, image_count, '张'
-        for page in xrange(1, (int(image_count)-1)/16+2):
+        for page in range(1, (int(image_count)-1)/16+2):
             link = self.image_prefix.format(model_id, album_id, page)
             body = self.readHtml(link).decode('gbk')
             images = re.findall(self.image_pattern, body)
@@ -105,16 +112,16 @@ class Crawler(object):
                 msg = (None, album_id, "", img_url,  1)
                 try:
                     self.sql.insert_data(command, msg, commit = True)
-                except Exception, e:
+                except Exception as e:
                     utils.log('insert photos data errors')
 
 
-                # print 'created photos success'
+                print ('created photos success')
 
 
 if __name__ == '__main__':
     test_html = 'https://mm.taobao.com/json/request_top_list.htm?page={0}'
-    for page in xrange(1, 100):
+    for page in range(1, 100):
         c = Crawler()
         data = c.readHtml(test_html.format(page))
         c.getLinkIdAndNames(data)
